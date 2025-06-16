@@ -37,7 +37,7 @@ let scatter, radar, dataTable;
 let currentData = null;
 let selectedDataPoints = []; // Array to store selected data points for radar chart
 const colorScale = d3.scaleOrdinal(d3.schemeCategory10); // Color scale for radar chart
-const unselectedColor = "#cccccc"; // Light gray for unselected points
+const unselectedColor = "#888"; // Light gray for unselected points
 const highlightColor = "#ff3333"; // Bright red for highlighting
 
 // Helper functions for data highlighting
@@ -470,7 +470,7 @@ function renderScatterplot() {
       const index = selectedDataPoints.findIndex((selected) => selected === d);
       return index !== -1 ? colorScale(index + 1) : unselectedColor;
     })
-    .attr("fill-opacity", 0.8)
+    .attr("fill-opacity", 0.7)
     .attr("stroke", "black")
     .attr("stroke-width", (d) => (isSelected(d) ? 1 : 0.5));
 
