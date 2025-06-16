@@ -357,12 +357,24 @@ function CreateDataTable(_data) {
   const rows = tbody.selectAll("tr").data(_data).enter().append("tr");
 
   // Add mouseover event
+  // Selecting cells
   rows
+    .selectAll("td")
+    .data(function (d) {
+      return headers.map(function (header) {
+        return { key: header, value: d[header], rowData: d };
+      });
+    })
+    .enter()
+    .append("td")
+    .text((d) => d.value)
+    .attr("class", "tableBodyClass")
     .on("mouseover", function (event, d) {
-      d3.select(this).style("background-color", "#f5f5f5");
+      d3.select(this).style("background-color", "lightblue");
+      d3.select(this).style("cursor", "pointer");
 
       // Highlight corresponding points in visualizations
-      highlightDataPoint(d);
+      highlightDataPoint(d.rowData);
     })
     .on("mouseout", function (event, d) {
       d3.select(this).style("background-color", "white");
@@ -384,6 +396,7 @@ function CreateDataTable(_data) {
     .text((d) => d)
     .attr("class", "tableBodyClass");
 }
+
 function renderScatterplot() {
   if (!window.currentData || window.currentData.length === 0) return;
 
