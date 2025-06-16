@@ -53,7 +53,7 @@ function highlightDataPoint(dataPoint) {
       return index !== -1 ? colorScale(index) : unselectedColor;
     })
     .attr("stroke-width", (d) =>
-      d === dataPoint ? 3 : isSelected(d) ? 2 : 0.5
+      d === dataPoint ? 3 : isSelected(d) ? 1 : 0.5
     );
 }
 
@@ -65,7 +65,7 @@ function removeHighlight() {
       const index = selectedDataPoints.findIndex((selected) => selected === d);
       return index !== -1 ? colorScale(index) : unselectedColor;
     })
-    .attr("stroke-width", (d) => (isSelected(d) ? 2 : 0.5));
+    .attr("stroke-width", (d) => (isSelected(d) ? 1 : 0.5));
 }
 
 // Helper function to check if a data point is selected
@@ -105,7 +105,7 @@ function updateScatterplotSelection() {
       const index = selectedDataPoints.findIndex((selected) => selected === d);
       return index !== -1 ? colorScale(index) : unselectedColor;
     })
-    .attr("stroke-width", (d) => (isSelected(d) ? 2 : 0.5));
+    .attr("stroke-width", (d) => (isSelected(d) ? 1 : 0.5));
 }
 
 // Initialize dashboard function (placeholder for Part 2)
@@ -472,14 +472,14 @@ function renderScatterplot() {
     })
     .attr("fill-opacity", 0.8)
     .attr("stroke", "black")
-    .attr("stroke-width", (d) => (isSelected(d) ? 2 : 0.5));
+    .attr("stroke-width", (d) => (isSelected(d) ? 1 : 0.5));
 
   dots.exit().remove(); // Add mouseover events for interactivity
   scatter
     .selectAll(".dot")
     .on("mouseover", function (event, d) {
       if (!isSelected(d)) {
-        d3.select(this).attr("fill", highlightColor).attr("stroke-width", 2);
+        d3.select(this).attr("fill", highlightColor).attr("stroke-width", 1);
       }
 
       // Show tooltip
@@ -507,7 +507,7 @@ function renderScatterplot() {
     })
     .on("mouseout", function (event, d) {
       if (!isSelected(d)) {
-        d3.select(this).attr("fill", unselectedColor).attr("stroke-width", 2);
+        d3.select(this).attr("fill", unselectedColor).attr("stroke-width", 1);
       }
 
       d3.select(this)
