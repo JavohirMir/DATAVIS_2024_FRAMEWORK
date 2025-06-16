@@ -470,11 +470,13 @@ function renderScatterplot() {
         .style("pointer-events", "none")
         .style("opacity", 0);
 
+      const allFieldsHtml = Object.entries(d)
+        .map(([key, value]) => `<strong>${key}</strong>: ${value}`)
+        .join("<br/>");
+
       tooltip.transition().duration(200).style("opacity", 1);
       tooltip
-        .html(
-          `${xDimension}: ${d[xDimension]}<br/>${yDimension}: ${d[yDimension]}<br/>${sizeDimension}: ${d[sizeDimension]}<br/><em>Click to add to radar chart</em>`
-        )
+        .html(`${allFieldsHtml}`)
         .style("left", event.pageX + 10 + "px")
         .style("top", event.pageY - 10 + "px");
     })
