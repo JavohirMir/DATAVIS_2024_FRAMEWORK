@@ -36,21 +36,35 @@ let scatter, radar, dataTable;
 // Add additional variables
 let currentData = null;
 let selectedDataPoints = []; // Array to store selected data points for radar chart
+const colorScale = d3.scaleOrdinal(d3.schemeCategory10); // Color scale for radar chart
+const unselectedColor = "#cccccc"; // Light gray for unselected points
+const highlightColor = "#ff3333"; // Bright red for highlighting
 
 // Helper functions for data highlighting
 function highlightDataPoint(dataPoint) {
   // Highlight in scatterplot
   scatter
     .selectAll(".dot")
-    .attr("fill", (d) => (d === dataPoint ? "red" : "steelblue"))
-    .attr("stroke-width", (d) => (d === dataPoint ? 3 : 0.5));
+    .attr("fill", (d) => {
+      if (d === dataPoint) {
+        return highlightColor;
+      }
+      const index = selectedDataPoints.findIndex((selected) => selected === d);
+      return index !== -1 ? colorScale(index) : unselectedColor;
+    })
+    .attr("stroke-width", (d) =>
+      d === dataPoint ? 3 : isSelected(d) ? 2 : 0.5
+    );
 }
 
 function removeHighlight() {
   // Remove highlight from scatterplot
   scatter
     .selectAll(".dot")
-    .attr("fill", (d) => (isSelected(d) ? "orange" : "steelblue"))
+    .attr("fill", (d) => {
+      const index = selectedDataPoints.findIndex((selected) => selected === d);
+      return index !== -1 ? colorScale(index) : unselectedColor;
+    })
     .attr("stroke-width", (d) => (isSelected(d) ? 2 : 0.5));
 }
 
@@ -66,8 +80,13 @@ function toggleDataPointSelection(dataPoint) {
   );
 
   if (index === -1) {
-    // Add to selection
-    selectedDataPoints.push(dataPoint);
+    // Add to selection (but limit to 10 points)
+    if (selectedDataPoints.length < 10) {
+      selectedDataPoints.push(dataPoint);
+    } else {
+      alert("Maximum of 10 points can be selected");
+      return;
+    }
   } else {
     // Remove from selection
     selectedDataPoints.splice(index, 1);
@@ -82,7 +101,10 @@ function toggleDataPointSelection(dataPoint) {
 function updateScatterplotSelection() {
   scatter
     .selectAll(".dot")
-    .attr("fill", (d) => (isSelected(d) ? "orange" : "steelblue"))
+    .attr("fill", (d) => {
+      const index = selectedDataPoints.findIndex((selected) => selected === d);
+      return index !== -1 ? colorScale(index) : unselectedColor;
+    })
     .attr("stroke-width", (d) => (isSelected(d) ? 2 : 0.5));
 }
 
@@ -444,17 +466,20 @@ function renderScatterplot() {
       const sizeValue = +d[sizeDimension];
       return isNaN(sizeValue) ? 5 : sizeScale(sizeValue);
     })
-    .attr("fill", "steelblue")
-    .attr("fill-opacity", 0.7)
+    .attr("fill", (d) => {
+      const index = selectedDataPoints.findIndex((selected) => selected === d);
+      return index !== -1 ? colorScale(index + 1) : unselectedColor;
+    })
+    .attr("fill-opacity", 0.8)
     .attr("stroke", "black")
-    .attr("stroke-width", 0.5);
+    .attr("stroke-width", (d) => (isSelected(d) ? 2 : 0.5));
 
   dots.exit().remove(); // Add mouseover events for interactivity
   scatter
     .selectAll(".dot")
     .on("mouseover", function (event, d) {
       if (!isSelected(d)) {
-        d3.select(this).attr("fill", "red").attr("stroke-width", 2);
+        d3.select(this).attr("fill", highlightColor).attr("stroke-width", 2);
       }
 
       // Show tooltip
@@ -482,8 +507,12 @@ function renderScatterplot() {
     })
     .on("mouseout", function (event, d) {
       if (!isSelected(d)) {
-        d3.select(this).attr("fill", "steelblue").attr("stroke-width", 0.5);
+        d3.select(this).attr("fill", unselectedColor).attr("stroke-width", 2);
       }
+
+      d3.select(this)
+        .attr("stroke", "black")
+        .attr("stroke-width", isSelected(d) ? 2 : 0.5);
 
       // Remove tooltip
       d3.selectAll(".tooltip").remove();
