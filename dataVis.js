@@ -39,6 +39,7 @@ let selectedDataPoints = []; // Array to store selected data points for radar ch
 const colorScale = d3.scaleOrdinal(d3.schemeCategory10); // Color scale for radar chart
 const unselectedColor = "#888"; // Light gray for unselected points
 const highlightColor = "#ff3333"; // Bright red for highlighting
+let colorAssignments = {}; // Track color assignments by data point identifier
 
 // Helper functions for data highlighting
 function highlightDataPoint(dataPoint) {
@@ -83,13 +84,25 @@ function toggleDataPointSelection(dataPoint) {
     // Add to selection (but limit to 10 points)
     if (selectedDataPoints.length < 10) {
       selectedDataPoints.push(dataPoint);
+      const identifier = getDataPointIdentifier(dataPoint);
+      if (!colorAssignments[identifier]) {
+        const usedColors = Object.values(colorAssignments);
+        const availableColor = d3.schemeCategory10.find(
+          (color) => !usedColors.includes(color)
+        );
+        colorAssignments[identifier] =
+          availableColor ||
+          colorScale(Object.keys(colorAssignments).length % 10);
+      }
     } else {
       alert("Maximum of 10 points can be selected");
       return;
     }
   } else {
     // Remove from selection
-    selectedDataPoints.splice(index, 1);
+    const removedPoint = selectedDataPoints.splice(index, 1)[0];
+    const identifier = getDataPointIdentifier(removedPoint);
+    delete colorAssignments[identifier];
   }
 
   // Update visualizations
@@ -97,13 +110,23 @@ function toggleDataPointSelection(dataPoint) {
   renderRadarChart();
 }
 
+// Helper function to create a unique identifier for a data point
+function getDataPointIdentifier(dataPoint) {
+  return dataPoint[dimensions[0]] || JSON.stringify(dataPoint);
+}
+
 // Function to update scatterplot visual selection
 function updateScatterplotSelection() {
   scatter
     .selectAll(".dot")
     .attr("fill", (d) => {
-      const index = selectedDataPoints.findIndex((selected) => selected === d);
-      return index !== -1 ? colorScale(index) : unselectedColor;
+      const identifier = getDataPointIdentifier(d);
+      return isSelected(d)
+        ? colorAssignments[identifier] ||
+            colorScale(
+              selectedDataPoints.findIndex((selected) => selected === d)
+            )
+        : unselectedColor;
     })
     .attr("stroke-width", (d) => (isSelected(d) ? 1 : 0.5));
 }
@@ -342,6 +365,7 @@ function clear() {
 
   // Clear selected data points
   selectedDataPoints = [];
+  colorAssignments = {};
 
   // Clear legend
   d3.select("#legend").selectAll("*").remove();
@@ -467,14 +491,16 @@ function renderScatterplot() {
       return isNaN(sizeValue) ? 5 : sizeScale(sizeValue);
     })
     .attr("fill", (d) => {
-      const index = selectedDataPoints.findIndex((selected) => selected === d);
-      return index !== -1 ? colorScale(index + 1) : unselectedColor;
+      const identifier = getDataPointIdentifier(d);
+      return isSelected(d)
+        ? colorAssignments[identifier] || unselectedColor
+        : unselectedColor;
     })
     .attr("fill-opacity", 0.7)
     .attr("stroke", "black")
     .attr("stroke-width", (d) => (isSelected(d) ? 1 : 0.5));
 
-  dots.exit().remove(); // Add mouseover events for interactivity
+  dots.exit().remove();
   scatter
     .selectAll(".dot")
     .on("mouseover", function (event, d) {
@@ -581,6 +607,8 @@ function renderRadarChart() {
   legend.append("br");
 
   selectedDataPoints.forEach((d, i) => {
+    const identifier = getDataPointIdentifier(d);
+    const pointColor = colorAssignments[identifier] || colorScale(i);
     const legendItem = legend
       .append("div")
       .style("display", "inline-block")
@@ -596,7 +624,7 @@ function renderRadarChart() {
       .style("display", "inline-block")
       .style("width", "12px")
       .style("height", "12px")
-      .style("background-color", colorScale(i))
+      .style("background-color", pointColor)
       .style("margin-right", "5px")
       .style("vertical-align", "middle");
 
@@ -619,7 +647,9 @@ function renderRadarChart() {
           (selected) => selected === d
         );
         if (index !== -1) {
-          selectedDataPoints.splice(index, 1);
+          const removedPoint = selectedDataPoints.splice(index, 1)[0];
+          const identifier = getDataPointIdentifier(removedPoint);
+          delete colorAssignments[identifier];
           updateScatterplotSelection();
           renderRadarChart();
         }
@@ -634,6 +664,8 @@ function renderRadarChart() {
 
   // Render polylines in unique colors
   selectedDataPoints.forEach((dataPoint, i) => {
+    const identifier = getDataPointIdentifier(dataPoint);
+    const pointColor = colorAssignments[identifier] || colorScale(i);
     const lineData = numericDimensions.map((dim, dimIndex) => {
       const value = +dataPoint[dim];
       const normalizedValue = isNaN(value) ? 0 : value;
@@ -671,9 +703,9 @@ function renderRadarChart() {
           })
           .join(" ");
       })
-      .attr("fill", colorScale(i))
+      .attr("fill", pointColor)
       .attr("fill-opacity", 0.1)
-      .attr("stroke", colorScale(i))
+      .attr("stroke", pointColor)
       .attr("stroke-width", 2)
       .on("mouseover", function () {
         d3.select(this).attr("fill-opacity", 0.3);
@@ -702,7 +734,7 @@ function renderRadarChart() {
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y)
       .attr("r", 3)
-      .attr("fill", colorScale(i))
+      .attr("fill", pointColor)
       .attr("stroke", "white")
       .attr("stroke-width", 1)
       .on("mouseover", function (event, d) {
