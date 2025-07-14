@@ -21,24 +21,17 @@
     />
     <link rel="stylesheet" type="text/css" href="style.css" />
 
-    <!-- include d3 -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-
-    <!-- include jQueryUI -->
     <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
-    <!-- PART 1: include dataVis script -->
     <script src="dataVis.js"></script>
-    <!-- PART 2: include scripts for the dashboard -->
     <script src="dashboard.js"></script>
   </head>
 
-  <!-- call init function when page has loaded -->
   <body onload="init()">
     <h1>Data Visualization Exercise</h1>
 
-    <!-- credits -->
     <div id="credits">
       Created by <span class="instructions">GROUP 17</span> for the Data
       Visualization Lecture at
@@ -60,7 +53,6 @@
       </p>
     </div>
 
-    <!-- create buttons to select tabs -->
     <button
       class="tablink"
       onclick="openPage('DataLoading', this, 'blue')"
@@ -78,20 +70,14 @@
       Dashboard
     </button>
 
-    <!-- Tab 1 -->
     <div id="DataLoading" class="tabcontent">
-      <!-- data selector -->
       <p>Select your data here: <input id="upload" type="file" /></p>
 
-      <!-- data table -->
       <div id="dataTable"></div>
     </div>
 
-    <!-- Tab 2 -->
     <div id="BasicVisualization" class="tabcontent">
-      <!-- scatterplot -->
       <div class="container">
-        <!-- scatterplot menu -->
         <h2>Scatterplot</h2>
 
         <p>Select dimensions to be displayed here:</p>
@@ -109,56 +95,49 @@
             </fieldset>
           </form>
         </div>
-        <!-- scatterplot SVG -->
         <div id="sp"></div>
       </div>
 
-      <!-- radar chart -->
       <div class="container">
         <h2>Radar Chart</h2>
-        <!-- radar chart SVG -->
         <div id="radar"></div>
         <div id="legend"><b>Legend:</b><br /></div>
       </div>
     </div>
 
-    <!-- Tab 3 -->
     <div id="Dashboard" class="tabcontent">
       <h1>Dashboard Example</h1>
 
-      <!-- TODO: The environment of your dashboard can be freely customized. Here is a general layout to get you started. -->
-
-      <!-- Grid container -->
       <div class="dashboardGrid">
-        <!-- chart 1 -->
         <div class="container">
-          <h2>Chart 1</h2>
-          <h4>Data representation 1.</h4>
-          <!-- radar chart SVG -->
-          <div id="chart1"></div>
+          <h2>Line Chart</h2>
+          <p>Select data series:</p>
+          <div id="lineChartMenu">
+            <form action="#">
+              <fieldset style="padding: 0px">
+                <label for="lineChartY">Y-axis: </label>
+                <select name="lineChartY" id="lineChartY"></select>
+              </fieldset>
+            </form>
+          </div>
+          <div id="line-chart"></div>
         </div>
 
-        <!-- chart 2 -->
         <div class="container">
           <h2>Chart 2</h2>
           <h4>Data representation 2.</h4>
-          <!-- radar chart SVG -->
           <div id="chart2"></div>
         </div>
 
-        <!-- chart 3 -->
         <div class="container">
           <h2>Chart 3</h2>
           <h4>Data representation 3.</h4>
-          <!-- radar chart SVG -->
           <div id="chart3"></div>
         </div>
 
-        <!-- chart 4 -->
         <div class="container">
           <h2>Chart 4</h2>
           <h4>Data representation 4.</h4>
-          <!-- radar chart SVG -->
           <div id="chart4"></div>
         </div>
       </div>
