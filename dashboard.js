@@ -9,86 +9,123 @@
  * All rights reserved.
  */
 
-let lineChart, chart2, chart3, chart4;
+let lineChart, barChart, chart3, chart4;
 let lineChartXAxis, lineChartYAxis, lineChartXAxisLabel, lineChartYAxisLabel;
 let lineChartXScale, lineChartYScale;
 
 // Dimensions for the line chart dropdown
 const lineChartDimensions = ["Water_Level_m", "Surface_Area_km2", "Volume_km3"];
-const xAxisDimension = "Year"; // <--- NEW: Define the X-axis dimension
+const xAxisDimension = "Year"; // The X-axis dimension for the line chart
 
-function initDashboard(_data) {
+let riverData = []; // To store the parsed river data
+
+// Expose initDashboard globally so dataVis.js can call it
+window.dashboardInit = function (
+  _mainData,
+  _riverDataFilePath = "datasets/water_delivery_1992_2023.csv"
+) {
+  // Clear any existing dashboard elements before re-initializing
   clearDashboard();
 
-  lineChart = d3
-    .select("#line-chart")
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .append("g")
-    .attr("transform", `translate(${margin.left}, ${margin.top})`);
+  // Load the river data from the specified CSV file
+  d3.csv(_riverDataFilePath, (d) => {
+    // Convert relevant fields to numbers
+    return {
+      Year: +d.Year,
+      AmuDarya_Growing_mln_m3: +d.AmuDarya_Growing_mln_m3,
+      AmuDarya_NonGrowing_mln_m3: +d.AmuDarya_NonGrowing_mln_m3,
+      AmuDarya_Total_mln_m3: +d.AmuDarya_Total_mln_m3,
+      SyrDarya_Growing_mln_m3: +d.SyrDarya_Growing_mln_m3,
+      SyrDarya_NonGrowing_mln_m3: +d.SyrDarya_NonGrowing_mln_m3,
+      SyrDarya_Total_mln_m3: +d.SyrDarya_Total_mln_m3,
+    };
+  })
+    .then((loadedRiverData) => {
+      riverData = loadedRiverData;
+      console.log("Loaded River Data from file:", riverData);
 
-  chart2 = d3
-    .select("#chart2")
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .append("g");
+      // Initialize SVG containers for all charts
+      lineChart = d3
+        .select("#line-chart")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-  chart3 = d3
-    .select("#chart3")
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .append("g");
+      barChart = d3
+        .select("#barChart")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", `translate(${margin.left}, ${margin.top})`); // Add margin for barChart
 
-  chart4 = d3
-    .select("#chart4")
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .append("g");
+      chart3 = d3
+        .select("#chart3")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g");
 
-  initLineChartMenu("lineChartY", lineChartDimensions);
+      chart4 = d3
+        .select("#chart4")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g");
 
-  lineChartXScale = d3
-    .scaleLinear()
-    .range([0, width - margin.left - margin.right]);
+      // Initialize menu for line chart
+      initLineChartMenu("lineChartY", lineChartDimensions);
 
-  lineChartYScale = d3
-    .scaleLinear()
-    .range([height - margin.top - margin.bottom, 0]);
+      // Define scales for line chart
+      lineChartXScale = d3
+        .scaleLinear()
+        .range([0, width - margin.left - margin.right]);
 
-  lineChartXAxis = lineChart
-    .append("g")
-    .attr("class", "x axis")
-    .attr("transform", `translate(0, ${height - margin.top - margin.bottom})`);
+      lineChartYScale = d3
+        .scaleLinear()
+        .range([height - margin.top - margin.bottom, 0]);
 
-  lineChartXAxisLabel = lineChartXAxis
-    .append("text")
-    .attr("fill", "black")
-    .attr("x", width - margin.left - margin.right)
-    .attr("y", -6)
-    .style("text-anchor", "end")
-    .text("Year");
+      // Append axes for line chart
+      lineChartXAxis = lineChart
+        .append("g")
+        .attr("class", "x axis")
+        .attr(
+          "transform",
+          `translate(0, ${height - margin.top - margin.bottom})`
+        );
 
-  lineChartYAxis = lineChart.append("g").attr("class", "y axis");
+      lineChartXAxisLabel = lineChartXAxis
+        .append("text")
+        .attr("fill", "black")
+        .attr("x", width - margin.left - margin.right)
+        .attr("y", -6)
+        .style("text-anchor", "end")
+        .text("Year");
 
-  lineChartYAxisLabel = lineChartYAxis
-    .append("text")
-    .attr("fill", "black")
-    .attr("transform", "rotate(-90)")
-    .attr("y", 6)
-    .attr("dy", "0.71em")
-    .style("text-anchor", "end")
-    .text("Value");
+      lineChartYAxis = lineChart.append("g").attr("class", "y axis");
 
-  renderLineChart();
+      lineChartYAxisLabel = lineChartYAxis
+        .append("text")
+        .attr("fill", "black")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", "0.71em")
+        .style("text-anchor", "end")
+        .text("Value");
 
-  createChart2();
-  createChart3();
-  createChart4();
-}
+      // Render both charts
+      renderLineChart();
+      createChart2(riverData);
+      createChart3();
+      createChart4();
+    })
+    .catch((error) => {
+      console.error("Error loading river data CSV:", error);
+      // Optionally, display an error message to the user
+    });
+};
 
 function initLineChartMenu(id, entries) {
   $("select#" + id).empty();
@@ -228,22 +265,183 @@ function renderLineChart() {
     });
 }
 
-function createChart2() {
-  // Placeholder for Chart 2
+function createChart2(_data) {
+  if (!_data || _data.length === 0) {
+    barChart.selectAll("*").remove();
+    return;
+  }
+
+  barChart.selectAll("*").remove(); // Clear previous elements
+
+  const chartWidth = width - margin.left - margin.right;
+  const chartHeight = height - margin.top - margin.bottom;
+
+  // Define the keys for the grouped bars
+  const riverTypes = ["AmuDarya_Total_mln_m3", "SyrDarya_Total_mln_m3"];
+  const riverNames = {
+    AmuDarya_Total_mln_m3: "Amu Darya",
+    SyrDarya_Total_mln_m3: "Syr Darya",
+  };
+  const riverColors = d3
+    .scaleOrdinal()
+    .domain(riverTypes)
+    .range(["#4CAF50", "#2196F3"]);
+
+  // X0 scale for years
+  const x0 = d3
+    .scaleBand()
+    .domain(_data.map((d) => d.Year))
+    .range([0, chartWidth])
+    .paddingInner(0.1);
+
+  // X1 scale for river types within each year group
+  const x1 = d3
+    .scaleBand()
+    .domain(riverTypes)
+    .range([0, x0.bandwidth()])
+    .padding(0.05);
+
+  // Y scale for water volume
+  const y = d3
+    .scaleLinear()
+    .domain([
+      0,
+      d3.max(_data, (d) =>
+        Math.max(d.AmuDarya_Total_mln_m3, d.SyrDarya_Total_mln_m3)
+      ),
+    ])
+    .nice()
+    .range([chartHeight, 0]);
+
+  // Append X-axis
+  barChart
+    .append("g")
+    .attr("class", "x axis")
+    .attr("transform", `translate(0,${chartHeight})`)
+    .call(d3.axisBottom(x0).tickFormat(d3.format("d")))
+    .selectAll("text")
+    .style("text-anchor", "end")
+    .attr("dx", "-.8em")
+    .attr("dy", ".15em")
+    .attr("transform", "rotate(-45)");
+
+  // Append Y-axis
+  barChart.append("g").attr("class", "y axis").call(d3.axisLeft(y));
+
+  // Add Y-axis label
+  barChart
+    .append("text")
+    .attr("class", "y label")
+    .attr("text-anchor", "end")
+    .attr("y", -margin.left + 10)
+    .attr("x", -margin.top)
+    .attr("transform", "rotate(-90)")
+    .text("Water Delivery (mln m³)");
+
+  // Create groups for each year
+  const yearGroups = barChart
+    .selectAll(".year-group")
+    .data(_data)
+    .enter()
+    .append("g")
+    .attr("class", "year-group")
+    .attr("transform", (d) => `translate(${x0(d.Year)},0)`);
+
+  // Append bars for each river type within the year group
+  yearGroups
+    .selectAll("rect")
+    .data((d) =>
+      riverTypes.map((key) => ({ key: key, value: d[key], year: d.Year }))
+    )
+    .enter()
+    .append("rect")
+    .attr("x", (d) => x1(d.key))
+    .attr("y", (d) => y(d.value))
+    .attr("width", x1.bandwidth())
+    .attr("height", (d) => chartHeight - y(d.value))
+    .attr("fill", (d) => riverColors(d.key))
+    .on("mouseover", function (event, d) {
+      d3.select(this).attr("opacity", 0.7);
+
+      const tooltip = d3
+        .select("body")
+        .append("div")
+        .attr("class", "tooltip")
+        .style("position", "absolute")
+        .style("background", "rgba(0,0,0,0.8)")
+        .style("color", "white")
+        .style("padding", "5px")
+        .style("border-radius", "3px")
+        .style("pointer-events", "none")
+        .style("opacity", 0);
+
+      tooltip.transition().duration(200).style("opacity", 1);
+      tooltip
+        .html(
+          `<strong>Year</strong>: ${d.year}<br/><strong>${
+            riverNames[d.key]
+          }</strong>: ${d.value} mln m³`
+        )
+        .style("left", event.pageX + 10 + "px")
+        .style("top", event.pageY - 10 + "px");
+    })
+    .on("mouseout", function () {
+      d3.select(this).attr("opacity", 1);
+      d3.selectAll(".tooltip").remove();
+    });
+
+  // Add a legend for the bar chart
+  const legendChart2 = barChart
+    .append("g")
+    .attr("font-family", "sans-serif")
+    .attr("font-size", 10)
+    .attr("text-anchor", "end")
+    .selectAll("g")
+    .data(riverTypes.slice().reverse())
+    .enter()
+    .append("g")
+    .attr("transform", (d, i) => `translate(0,${i * 20})`);
+
+  legendChart2
+    .append("rect")
+    .attr("x", chartWidth - 19)
+    .attr("width", 19)
+    .attr("height", 19)
+    .attr("fill", riverColors);
+
+  legendChart2
+    .append("text")
+    .attr("x", chartWidth - 24)
+    .attr("y", 9.5)
+    .attr("dy", "0.32em")
+    .text((d) => riverNames[d]);
 }
 
 function createChart3() {
-  // Placeholder for Chart 3
+  chart3.selectAll("*").remove(); // Clear previous elements
+  chart3
+    .append("text")
+    .attr("x", width / 2)
+    .attr("y", height / 2)
+    .attr("text-anchor", "middle")
+    .text("Chart 3 Placeholder");
 }
 
 function createChart4() {
-  // Placeholder for Chart 4
+  chart4.selectAll("*").remove(); // Clear previous elements
+  chart4
+    .append("text")
+    .attr("x", width / 2)
+    .attr("y", height / 2)
+    .attr("text-anchor", "middle")
+    .text("Chart 4 Placeholder");
 }
 
-// clear files if changes (dataset) occur
+// clear files if changes in the datasets occur
 function clearDashboard() {
-  if (lineChart) lineChart.selectAll("*").remove();
-  if (chart2) chart2.selectAll("*").remove();
-  if (chart3) chart3.selectAll("*").remove();
-  if (chart4) chart4.selectAll("*").remove();
+  // Select all SVG elements within the dashboard containers and remove them
+  d3.select("#line-chart").selectAll("svg").remove();
+  d3.select("#barChart").selectAll("svg").remove();
+  d3.select("#chart3").selectAll("svg").remove();
+  d3.select("#chart4").selectAll("svg").remove();
 }
