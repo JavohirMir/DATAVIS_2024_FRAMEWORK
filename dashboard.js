@@ -17,6 +17,13 @@ let lineChartXScale, lineChartYScale;
 const lineChartDimensions = ["Water_Level_m", "Surface_Area_km2", "Volume_km3"];
 const xAxisDimension = "Year"; // The X-axis dimension for the line chart
 
+// Label mapping
+const labelMap = {
+  Water_Level_m: "Water Level (m)",
+  Surface_Area_km2: "Surface Area (km²)",
+  Volume_km3: "Volume (km³)",
+};
+
 let riverData = []; // To store the parsed river data
 
 // Expose initDashboard globally so dataVis.js can call it
@@ -117,7 +124,7 @@ window.dashboardInit = function (
 
       // Render both charts
       renderLineChart();
-      createChart2(riverData);
+      renderBarChart(riverData);
       createChart3();
       createChart4();
     })
@@ -131,7 +138,9 @@ function initLineChartMenu(id, entries) {
   $("select#" + id).empty();
 
   entries.forEach(function (d) {
-    $("select#" + id).append("<option>" + d + "</option>");
+    $("select#" + id).append(
+      "<option value='" + d + "'>" + labelMap[d] || d + "</option>"
+    );
   });
 
   $("#" + id).selectmenu({
@@ -165,7 +174,9 @@ function renderLineChart() {
   }
 
   // Update Y-axis label
-  lineChartYAxisLabel.text(selectedDimension);
+  const selectedDimensionLabel =
+    labelMap[selectedDimension] || selectedDimension;
+  lineChartYAxisLabel.text(selectedDimensionLabel);
 
   const xExtent = d3.extent(window.currentData, (d) => +d[xAxisDimension]);
   const yExtent = d3.extent(window.currentData, (d) => +d[selectedDimension]);
@@ -254,7 +265,9 @@ function renderLineChart() {
       tooltip.transition().duration(200).style("opacity", 1);
       tooltip
         .html(
-          `<strong>Year</strong>: ${d[xAxisDimension]}<br/><strong>${selectedDimension}</strong>: ${d[selectedDimension]}`
+          `<strong>Year</strong>: ${d[xAxisDimension]}<br/><strong>${
+            labelMap[selectedDimension] || selectedDimension
+          }</strong>: ${d[selectedDimension]}`
         )
         .style("left", event.pageX + 10 + "px")
         .style("top", event.pageY - 10 + "px");
@@ -265,7 +278,7 @@ function renderLineChart() {
     });
 }
 
-function createChart2(_data) {
+function renderBarChart(_data) {
   if (!_data || _data.length === 0) {
     barChart.selectAll("*").remove();
     return;
@@ -332,10 +345,9 @@ function createChart2(_data) {
   barChart
     .append("text")
     .attr("class", "y label")
-    .attr("text-anchor", "end")
-    .attr("y", -margin.left + 10)
-    .attr("x", -margin.top)
-    .attr("transform", "rotate(-90)")
+    .attr("text-anchor", "start")
+    .attr("y", -margin.top / 2)
+    .attr("x", 0)
     .text("Water Delivery (mln m³)");
 
   // Create groups for each year

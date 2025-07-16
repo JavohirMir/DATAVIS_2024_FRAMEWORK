@@ -144,7 +144,7 @@ function initDashboard(data) {
 
 function init() {
   // define size of plots
-  margin = { top: 20, right: 20, bottom: 20, left: 50 };
+  margin = { top: 20, right: 20, bottom: 30, left: 50 };
   width = 600;
   height = 500;
   radius = width / 2;
