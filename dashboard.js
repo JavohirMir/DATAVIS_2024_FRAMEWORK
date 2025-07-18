@@ -465,34 +465,30 @@ function createChart3() {
     .style("height", "100%")
     .style("overflow", "hidden");
 
-  // Create two image elements for smooth transitions
-  const image1 = imageDiv
+  // Create single image element for direct timelapse
+  const timelapseImage = imageDiv
     .append("xhtml:img")
     .style("position", "absolute")
     .style("top", "0")
     .style("left", "0")
     .style("width", "100%")
     .style("height", "100%")
-    .style("object-fit", "contain")
-    .style("opacity", "1")
-    .style("transition", "opacity 0.3s ease-in-out");
+    .style("object-fit", "contain");
 
-  const image2 = imageDiv
-    .append("xhtml:img")
-    .style("position", "absolute")
-    .style("top", "0")
-    .style("left", "0")
-    .style("width", "100%")
-    .style("height", "100%")
-    .style("object-fit", "contain")
-    .style("opacity", "0")
-    .style("transition", "opacity 0.3s ease-in-out");
+  let imageCache = {};
 
-  let activeImage = image1;
-  let inactiveImage = image2;
+  // Preload all images for smooth transitions
+  function preloadImages() {
+    aralSeaYears.forEach(year => {
+      const img = new Image();
+      img.src = `ARAL SEA/${year}.png`;
+      imageCache[year] = img;
+    });
+  }
 
-  // Initialize with first image
-  activeImage.attr("src", `ARAL SEA/${aralSeaYears[0]}.png`);
+  // Initialize with first image and start preloading
+  timelapseImage.attr("src", `ARAL SEA/${aralSeaYears[0]}.png`);
+  preloadImages();
 
   // Year display
   const yearDisplay = timelapseContainer
@@ -619,19 +615,10 @@ function createChart3() {
     const newYear = aralSeaYears[currentImageIndex];
     const newImageSrc = `ARAL SEA/${newYear}.png`;
     
-    // Load new image in inactive image element
-    inactiveImage.attr("src", newImageSrc);
+    // Direct image swap - no fading
+    timelapseImage.attr("src", newImageSrc);
     
-    // Fade out active image and fade in inactive image
-    activeImage.style("opacity", "0");
-    inactiveImage.style("opacity", "1");
-    
-    // Swap references
-    const temp = activeImage;
-    activeImage = inactiveImage;
-    inactiveImage = temp;
-    
-    // Update displays
+    // Update displays immediately
     yearDisplay.text(newYear);
     yearSlider.property("value", currentImageIndex);
   }
