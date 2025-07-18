@@ -1,10 +1,10 @@
 /*
  * Data Visualization - Framework
  * Copyright (C) University of Passau
- *   Faculty of Computer Science and Mathematics
- *   Chair of Cognitive sensor systems
+ * Faculty of Computer Science and Mathematics
+ * Chair of Cognitive sensor systems
  * Maintenance:
- *   2025, Alexander Gall <alexander.gall@uni-passau.de>
+ * 2025, Alexander Gall <alexander.gall@uni-passau.de>
  *
  * All rights reserved.
  */
@@ -112,7 +112,7 @@ function toggleDataPointSelection(dataPoint) {
 
 // Helper function to create a unique identifier for a data point
 function getDataPointIdentifier(dataPoint) {
-  return dataPoint[dimensions[0]] || JSON.stringify(dataPoint);
+  return dataPoint.Year || dataPoint.ID || JSON.stringify(dataPoint);
 }
 
 // Function to update scatterplot visual selection
@@ -122,10 +122,7 @@ function updateScatterplotSelection() {
     .attr("fill", (d) => {
       const identifier = getDataPointIdentifier(d);
       return isSelected(d)
-        ? colorAssignments[identifier] ||
-            colorScale(
-              selectedDataPoints.findIndex((selected) => selected === d)
-            )
+        ? colorAssignments[identifier] || unselectedColor
         : unselectedColor;
     })
     .attr("stroke-width", (d) => (isSelected(d) ? 1 : 0.5));
@@ -133,13 +130,21 @@ function updateScatterplotSelection() {
 
 // Initialize dashboard function (placeholder for Part 2)
 function initDashboard(data) {
-  // TODO: Implement dashboard functionality in Part 2
-  console.log("Dashboard initialization placeholder");
+  // This function is defined in dashboard.js
+  // It will be called here to initialize the dashboard with the loaded data
+  if (typeof window.dashboardInit === "function") {
+    // Pass the main data and the path to the river data CSV
+    window.dashboardInit(data, "datasets/water_delivery_1992_2023.csv");
+  } else {
+    console.warn(
+      "dashboardInit function not found. Dashboard might not be initialized."
+    );
+  }
 }
 
 function init() {
   // define size of plots
-  margin = { top: 20, right: 20, bottom: 20, left: 50 };
+  margin = { top: 20, right: 20, bottom: 30, left: 50 };
   width = 600;
   height = 500;
   radius = width / 2;
@@ -172,6 +177,9 @@ function init() {
     readFile = function () {
       // clear existing visualizations
       clear();
+      if (typeof clearDashboard === "function") {
+        clearDashboard();
+      }
 
       let reader = new FileReader();
       reader.onloadend = function () {
@@ -179,7 +187,15 @@ function init() {
         console.log(reader.result);
 
         // Parse CSV data
-        const csvData = d3.csvParse(reader.result);
+        const csvData = d3.csvParse(reader.result, (d) => {
+          // Attempt to convert all values to numbers, if they are valid numbers
+          const newD = {};
+          for (const key in d) {
+            const numVal = +d[key];
+            newD[key] = isNaN(numVal) || d[key] === "" ? d[key] : numVal;
+          }
+          return newD;
+        });
         console.log("parsed data: ", csvData);
 
         // Parse dimensions from CSV headers
@@ -192,7 +208,7 @@ function init() {
         initVis(csvData);
         CreateDataTable(csvData);
 
-        // TODO: possible place to call the dashboard file for Part 2
+        // Call the dashboard initialization with the loaded data
         initDashboard(csvData);
       };
       reader.readAsBinaryString(fileInput.files[0]);
@@ -268,12 +284,17 @@ function initVis(_data) {
     .attr("x", width - margin.right)
     .text("y");
 
+  // Filter numeric dimensions for radar chart axes and labels
+  const numericDimensionsForRadar = dimensions.filter((dim) => {
+    const values = _data.map((d) => +d[dim]).filter((v) => !isNaN(v));
+    return values.length > 0;
+  });
+
   // radar chart axes
-  radarAxesAngle = (Math.PI * 2) / dimensions.length;
+  radarAxesAngle = (Math.PI * 2) / numericDimensionsForRadar.length;
   let axisRadius = d3.scaleLinear().range([0, radius]);
   let maxAxisRadius = 0.75,
     textRadius = 0.8;
-  gridRadius = 0.1;
 
   // Clear existing radar elements
   radar.selectAll("*").remove();
@@ -281,7 +302,7 @@ function initVis(_data) {
   // radar axes
   radarAxes = radar
     .selectAll(".axis")
-    .data(dimensions)
+    .data(numericDimensionsForRadar)
     .enter()
     .append("g")
     .attr("class", "axis");
@@ -301,7 +322,8 @@ function initVis(_data) {
 
   // Render grid lines in gray
   for (let level = 1; level <= 5; level++) {
-    const gridData = dimensions.map((d, i) => {
+    const gridData = numericDimensionsForRadar.map((d, i) => {
+      // Use filtered dimensions for grid
       return {
         x: radarX(axisRadius((maxAxisRadius * level) / 5), i),
         y: radarY(axisRadius((maxAxisRadius * level) / 5), i),
@@ -326,7 +348,7 @@ function initVis(_data) {
   // Render axes labels with correct dimension names
   radar
     .selectAll(".axisLabel")
-    .data(dimensions)
+    .data(numericDimensionsForRadar) // Use filtered dimensions for labels
     .enter()
     .append("text")
     .attr("class", "axisLabel")
@@ -587,18 +609,6 @@ function renderRadarChart() {
 
   // Update radar angle based on numeric dimensions
   radarAxesAngle = (Math.PI * 2) / numericDimensions.length;
-
-  // Update scales for radar chart
-  const maxValues = {};
-  numericDimensions.forEach((dim) => {
-    if (window.extents[dim]) {
-      maxValues[dim] = window.extents[dim][1];
-      window.rScale.domain([0, window.extents[dim][1]]);
-    }
-  });
-
-  // Color scale for different data points
-  const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
   // Show selected items in legend with clickable X buttons
   const legend = d3.select("#legend");
