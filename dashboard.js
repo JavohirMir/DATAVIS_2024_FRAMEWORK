@@ -432,12 +432,232 @@ function renderBarChart(_data) {
 
 function createChart3() {
   chart3.selectAll("*").remove(); // Clear previous elements
-  chart3
+
+  // Aral Sea timelapse data
+  const aralSeaYears = [
+    1974, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992,
+    1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+    2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
+    2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020
+  ];
+
+  let currentImageIndex = 0;
+  let isPlaying = false;
+  let playSpeed = 500; // milliseconds
+  let playInterval;
+
+  // Create container for the timelapse
+  const timelapseContainer = chart3
+    .append("g")
+    .attr("class", "timelapse-container");
+
+  // Create image display area
+  const imageContainer = timelapseContainer
+    .append("foreignObject")
+    .attr("x", 50)
+    .attr("y", 30)
+    .attr("width", width - 100)
+    .attr("height", height - 120);
+
+  const imageDiv = imageContainer
+    .append("xhtml:div")
+    .style("position", "relative")
+    .style("width", "100%")
+    .style("height", "100%")
+    .style("overflow", "hidden");
+
+  // Create single image element for direct timelapse
+  const timelapseImage = imageDiv
+    .append("xhtml:img")
+    .style("position", "absolute")
+    .style("top", "0")
+    .style("left", "0")
+    .style("width", "100%")
+    .style("height", "100%")
+    .style("object-fit", "contain");
+
+  let imageCache = {};
+
+  // Preload all images for smooth transitions
+  function preloadImages() {
+    aralSeaYears.forEach(year => {
+      const img = new Image();
+      img.src = `ARAL SEA/${year}.png`;
+      imageCache[year] = img;
+    });
+  }
+
+  // Initialize with first image and start preloading
+  timelapseImage.attr("src", `ARAL SEA/${aralSeaYears[0]}.png`);
+  preloadImages();
+
+  // Year display
+  const yearDisplay = timelapseContainer
     .append("text")
     .attr("x", width / 2)
-    .attr("y", height / 2)
+    .attr("y", 25)
     .attr("text-anchor", "middle")
-    .text("Chart 3 Placeholder");
+    .attr("font-size", "20px")
+    .attr("font-weight", "bold")
+    .text(aralSeaYears[0]);
+
+  // Controls container
+  const controlsContainer = timelapseContainer
+    .append("foreignObject")
+    .attr("x", 0)
+    .attr("y", height - 80)
+    .attr("width", width)
+    .attr("height", 80);
+
+  const controlsDiv = controlsContainer
+    .append("xhtml:div")
+    .style("display", "flex")
+    .style("flex-direction", "column")
+    .style("align-items", "center")
+    .style("gap", "10px")
+    .style("padding", "10px");
+
+  // Play controls row
+  const playControlsDiv = controlsDiv
+    .append("xhtml:div")
+    .style("display", "flex")
+    .style("align-items", "center")
+    .style("gap", "10px");
+
+  // Previous button
+  const prevButton = playControlsDiv
+    .append("xhtml:button")
+    .text("◀")
+    .style("padding", "5px 10px")
+    .style("cursor", "pointer")
+    .on("click", () => {
+      if (currentImageIndex > 0) {
+        currentImageIndex--;
+        updateImage();
+      }
+    });
+
+  // Play/Pause button
+  const playButton = playControlsDiv
+    .append("xhtml:button")
+    .text("▶")
+    .style("padding", "5px 10px")
+    .style("cursor", "pointer")
+    .on("click", togglePlay);
+
+  // Next button
+  const nextButton = playControlsDiv
+    .append("xhtml:button")
+    .text("▶")
+    .style("padding", "5px 10px")
+    .style("cursor", "pointer")
+    .on("click", () => {
+      if (currentImageIndex < aralSeaYears.length - 1) {
+        currentImageIndex++;
+        updateImage();
+      }
+    });
+
+  // Speed controls row
+  const speedControlsDiv = controlsDiv
+    .append("xhtml:div")
+    .style("display", "flex")
+    .style("align-items", "center")
+    .style("gap", "10px");
+
+  speedControlsDiv
+    .append("xhtml:span")
+    .text("Speed:");
+
+  const speedSlider = speedControlsDiv
+    .append("xhtml:input")
+    .attr("type", "range")
+    .attr("min", "100")
+    .attr("max", "2000")
+    .attr("value", playSpeed)
+    .style("width", "150px")
+    .on("input", function() {
+      playSpeed = +this.value;
+      if (isPlaying) {
+        clearInterval(playInterval);
+        startPlay();
+      }
+    });
+
+  const speedDisplay = speedControlsDiv
+    .append("xhtml:span")
+    .text(`${playSpeed}ms`);
+
+  // Year slider
+  const yearSliderDiv = controlsDiv
+    .append("xhtml:div")
+    .style("display", "flex")
+    .style("align-items", "center")
+    .style("gap", "10px")
+    .style("width", "80%");
+
+  yearSliderDiv
+    .append("xhtml:span")
+    .text("Year:");
+
+  const yearSlider = yearSliderDiv
+    .append("xhtml:input")
+    .attr("type", "range")
+    .attr("min", "0")
+    .attr("max", aralSeaYears.length - 1)
+    .attr("value", "0")
+    .style("flex", "1")
+    .on("input", function() {
+      currentImageIndex = +this.value;
+      updateImage();
+    });
+
+  function updateImage() {
+    const newYear = aralSeaYears[currentImageIndex];
+    const newImageSrc = `ARAL SEA/${newYear}.png`;
+    
+    // Direct image swap - no fading
+    timelapseImage.attr("src", newImageSrc);
+    
+    // Update displays immediately
+    yearDisplay.text(newYear);
+    yearSlider.property("value", currentImageIndex);
+  }
+
+  function startPlay() {
+    playInterval = setInterval(() => {
+      if (currentImageIndex < aralSeaYears.length - 1) {
+        currentImageIndex++;
+        updateImage();
+      } else {
+        // Loop back to start
+        currentImageIndex = 0;
+        updateImage();
+      }
+    }, playSpeed);
+  }
+
+  function togglePlay() {
+    if (isPlaying) {
+      clearInterval(playInterval);
+      playButton.text("▶");
+      isPlaying = false;
+    } else {
+      startPlay();
+      playButton.text("⏸");
+      isPlaying = true;
+    }
+  }
+
+  // Update speed display when slider changes
+  speedSlider.on("input", function() {
+    playSpeed = +this.value;
+    speedDisplay.text(`${playSpeed}ms`);
+    if (isPlaying) {
+      clearInterval(playInterval);
+      startPlay();
+    }
+  });
 }
 
 function createChart4() {
