@@ -372,6 +372,7 @@ function renderBarChart(_data) {
     .attr("width", x1.bandwidth())
     .attr("height", (d) => chartHeight - y(d.value))
     .attr("fill", (d) => riverColors(d.key))
+    .style("cursor", "pointer")
     .on("mouseover", function (event, d) {
       d3.select(this).attr("opacity", 0.7);
 
