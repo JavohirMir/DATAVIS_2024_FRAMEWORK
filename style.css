@@ -145,3 +145,7 @@ div.tooltip {
   pointer-events: none;
   font-size: 0.7rem;
 }
+
+.month-cell {
+  transition: fill 0.2s ease-in-out, stroke 0.2s ease-in-out;
+}

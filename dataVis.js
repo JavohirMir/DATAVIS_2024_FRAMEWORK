@@ -134,7 +134,11 @@ function initDashboard(data) {
   // It will be called here to initialize the dashboard with the loaded data
   if (typeof window.dashboardInit === "function") {
     // Pass the main data and the path to the river data CSV
-    window.dashboardInit(data, "datasets/water_delivery_1992_2023.csv");
+    window.dashboardInit(
+      data,
+      "datasets/water_delivery_1992_2023.csv",
+      "datasets/av_temperature.csv"
+    );
   } else {
     console.warn(
       "dashboardInit function not found. Dashboard might not be initialized."
