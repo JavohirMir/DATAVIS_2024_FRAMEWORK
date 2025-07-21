@@ -11,8 +11,19 @@ A comprehensive data visualization project for analyzing the environmental chang
 
 This project presents a multi-faceted visualization of the Aral Sea's environmental degradation from 1961 to 2023. The framework combines satellite imagery, statistical data, and interactive visualizations to tell the story of one of the world's most significant environmental disasters.
 
+## Screenshots
+
+### Dashboard Overview
+
+![Dashboard Overview 1](![Dashboard Overview 1](image-0.png))
+![Dashboard Overview 2](![Dashboard Overview 2](image-1.png))
+![Dashboard Overview 3](![Dashboard Overview 3](image-2.png))
+
+_The main dashboard showing all visualization components including satellite timelapse, water body map, sea metrics line chart, river water delivery bar chart, temperature heatmap, and monthly temperature analysis._
+
 ## Table of Contents
 
+- [Screenshots](#screenshots)
 - [Architecture](#architecture)
 - [Features](#features)
 - [Data Sources](#data-sources)
