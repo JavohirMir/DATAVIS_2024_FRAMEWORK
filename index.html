@@ -19,15 +19,20 @@
       rel="stylesheet"
       href="http://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css"
     />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
-      crossorigin="" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
     <link rel="stylesheet" type="text/css" href="style.css" />
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
-      crossorigin=""></script>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
     <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
@@ -59,10 +64,7 @@
       </p>
     </div>
 
-    <button
-      class="tablink"
-      onclick="openPage('DataLoading', this, 'blue')"
-    >
+    <button class="tablink" onclick="openPage('DataLoading', this, 'blue')">
       Data Loading
     </button>
     <button
@@ -71,7 +73,11 @@
     >
       Basic Visualization
     </button>
-    <button class="tablink" onclick="openPage('Dashboard', this, 'blue')" id="defaultOpen">
+    <button
+      class="tablink"
+      onclick="openPage('Dashboard', this, 'blue')"
+      id="defaultOpen"
+    >
       Dashboard
     </button>
 
@@ -111,9 +117,21 @@
     </div>
 
     <div id="Dashboard" class="tabcontent">
-      <h1>Visual Evidence of the Vanishing Seae</h1>
+      <h1>The Visual Evidences of the Vanishing Aral Sea</h1>
 
       <div class="dashboardGrid">
+        <div class="container full-width">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px">
+            <div>
+              <h2>Satellite Images</h2>
+              <div id="timelapse"></div>
+            </div>
+            <div>
+              <h2>Water Body Changes</h2>
+              <div id="map"></div>
+            </div>
+          </div>
+        </div>
         <div class="container">
           <h2>Sea Metrics</h2>
           <div id="lineChartMenu">
@@ -136,7 +154,6 @@
           <h2>Average Air Temperature</h2>
           <div id="temperatureHeatmap"></div>
         </div>
-        
 
         <div class="container">
           <h2>
@@ -144,20 +161,6 @@
             <span id="selectedYearDisplay"></span>
           </h2>
           <div id="monthlyTemperatureLineChart"></div>
-        </div>
-
-        <div class="container full-width">
-          <h2>Aral Sea Visualization</h2>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div>
-              <h3>Satellite Images Timelapse</h3>
-              <div id="chart3"></div>
-            </div>
-            <div>
-              <h3>Geographic Location</h3>
-              <div id="map"></div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

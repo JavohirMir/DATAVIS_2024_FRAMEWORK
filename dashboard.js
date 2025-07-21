@@ -11,7 +11,7 @@
 
 let lineChart,
   barChart,
-  chart3,
+  timelapse,
   temperatureHeatmap,
   monthlyTemperatureLineChart,
   lineChartXAxis,
@@ -122,8 +122,8 @@ window.dashboardInit = function (
         .append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-      chart3 = d3
-        .select("#chart3")
+      timelapse = d3
+        .select("#timelapse")
         .append("svg")
         .attr("width", width)
         .attr("height", height)
@@ -189,7 +189,7 @@ window.dashboardInit = function (
       // Render all charts
       renderLineChart();
       renderBarChart(riverData);
-      createChart3();
+      createTimelapse();
       initializeAralSeaMap();
       renderTemperatureHeatmap(temperatureDataHeatmap);
       if (temperatureDataRaw.length > 0) {
@@ -498,8 +498,8 @@ function renderBarChart(_data) {
     .text((d) => riverNames[d]);
 }
 
-function createChart3() {
-  chart3.selectAll("*").remove();
+function createTimelapse() {
+  timelapse.selectAll("*").remove();
 
   // Aral Sea timelapse data
   const aralSeaYears = [
@@ -515,7 +515,7 @@ function createChart3() {
   let playInterval;
 
   // Create container for the timelapse
-  const timelapseContainer = chart3
+  const timelapseContainer = timelapse
     .append("g")
     .attr("class", "timelapse-container");
 
@@ -1072,91 +1072,110 @@ function renderMonthlyTemperatureLineChart(_dataRaw, selectedYear) {
 // Initialize Aral Sea map with Leaflet
 function initializeAralSeaMap() {
   // Initialize the map centered on the Aral Sea
-  aralSeaMap = L.map('map').setView([45.0, 60.0], 6);
-  
+  aralSeaMap = L.map("map").setView([45.0, 60.0], 6);
+
   // Add OpenStreetMap tile layer
-  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  });
-  
+  const osmLayer = L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      attribution: "© OpenStreetMap contributors",
+    }
+  );
+
   // Add satellite layer option
-  const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles © Esri'
-  });
-  
+  const satelliteLayer = L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    {
+      attribution: "Tiles © Esri",
+    }
+  );
+
   // Add GSW web tile layers (from the official GSW service)
-  const gswExtentTiles = L.tileLayer('https://storage.googleapis.com/global-surface-water/tiles2021/extent/{z}/{x}/{y}.png', {
-    maxZoom: 13,
-    opacity: 0.7,
-    attribution: '© 2021 EC JRC/Google'
-  });
-  
-  const gswOccurrenceTiles = L.tileLayer('https://storage.googleapis.com/global-surface-water/tiles2021/occurrence/{z}/{x}/{y}.png', {
-    maxZoom: 13,
-    opacity: 0.7,
-    attribution: '© 2021 EC JRC/Google'
-  });
-  
-  const gswTransitionsTiles = L.tileLayer('https://storage.googleapis.com/global-surface-water/tiles2021/transitions/{z}/{x}/{y}.png', {
-    maxZoom: 13,
-    opacity: 0.7,
-    attribution: '© 2021 EC JRC/Google'
-  });
-  
+  const gswExtentTiles = L.tileLayer(
+    "https://storage.googleapis.com/global-surface-water/tiles2021/extent/{z}/{x}/{y}.png",
+    {
+      maxZoom: 13,
+      opacity: 0.7,
+      attribution: "© 2021 EC JRC/Google",
+    }
+  );
+
+  const gswOccurrenceTiles = L.tileLayer(
+    "https://storage.googleapis.com/global-surface-water/tiles2021/occurrence/{z}/{x}/{y}.png",
+    {
+      maxZoom: 13,
+      opacity: 0.7,
+      attribution: "© 2021 EC JRC/Google",
+    }
+  );
+
+  const gswTransitionsTiles = L.tileLayer(
+    "https://storage.googleapis.com/global-surface-water/tiles2021/transitions/{z}/{x}/{y}.png",
+    {
+      maxZoom: 13,
+      opacity: 0.7,
+      attribution: "© 2021 EC JRC/Google",
+    }
+  );
+
   // Set default base layer
   osmLayer.addTo(aralSeaMap);
-  
+
   // Create base layers
   const baseLayers = {
-    "OpenStreetMap": osmLayer,
-    "Satellite": satelliteLayer
+    OpenStreetMap: osmLayer,
+    Satellite: satelliteLayer,
   };
-  
+
   // Create overlay layers (only Global Tiles)
   const overlayMaps = {
     "Water Extent": gswExtentTiles,
     "Water Occurrence": gswOccurrenceTiles,
-    "Water Transitions": gswTransitionsTiles
+    "Water Transitions": gswTransitionsTiles,
   };
-  
+
   // Add layer control to map
-  const layerControl = L.control.layers(baseLayers, overlayMaps, {
-    position: 'topright',
-    collapsed: false
-  }).addTo(aralSeaMap);
-  
+  const layerControl = L.control
+    .layers(baseLayers, overlayMaps, {
+      position: "topright",
+      collapsed: false,
+    })
+    .addTo(aralSeaMap);
+
   // Add legend for Global Surface Water layers
-  const gswLegend = L.control({position: 'bottomleft'});
+  const gswLegend = L.control({ position: "bottomleft" });
   gswLegend.onAdd = function (map) {
-    const div = L.DomUtil.create('div', 'gsw-legend');
-    div.innerHTML = 
+    const div = L.DomUtil.create("div", "gsw-legend");
+    div.innerHTML =
       '<div style="background: white; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 12px; max-width: 250px;">' +
       '<h4 style="margin: 0 0 8px 0; color: #2c5aa0;">Global Surface Water Layers</h4>' +
       '<div style="margin-bottom: 6px;"><strong>Extent:</strong> Maximum water extent (1984-2021)</div>' +
       '<div style="margin-bottom: 6px;"><strong>Occurrence:</strong> Water frequency<br><span style="color: #0066cc;">■</span> = More frequent water</div>' +
       '<div style="margin-bottom: 8px;"><strong>Transitions:</strong> Water body changes over time</div>' +
       '<div style="margin-top: 8px; font-size: 10px; color: #666; border-top: 1px solid #eee; padding-top: 6px;">' +
-      'Source: © European Commission JRC' +
-      '</div>' +
-      '</div>';
+      "Source: © European Commission JRC" +
+      "</div>" +
+      "</div>";
     return div;
   };
   gswLegend.addTo(aralSeaMap);
-  
+
   // Add scale control
-  L.control.scale({
-    position: 'bottomright'
-  }).addTo(aralSeaMap);
+  L.control
+    .scale({
+      position: "bottomright",
+    })
+    .addTo(aralSeaMap);
 }
 
 // clear files if changes in the datasets occur
 function clearDashboard() {
   d3.select("#line-chart").selectAll("svg").remove();
   d3.select("#barChart").selectAll("svg").remove();
-  d3.select("#chart3").selectAll("svg").remove();
+  d3.select("#timelapse").selectAll("svg").remove();
   d3.select("#temperatureHeatmap").selectAll("svg").remove();
   d3.select("#monthlyTemperatureLineChart").selectAll("svg").remove();
-  
+
   // Clear map if it exists
   if (aralSeaMap) {
     aralSeaMap.remove();
