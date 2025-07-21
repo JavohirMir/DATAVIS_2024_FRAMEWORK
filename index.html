@@ -2,8 +2,8 @@
 <!--
 * Data Visualization - Framework
 * Copyright (C) University of Passau
-*   Faculty of Computer Science and Mathematics
-*   Chair of Cognitive sensor systems
+* Faculty of Computer Science and Mathematics
+* Chair of Cognitive sensor systems
 * Maintenance:
 *   2025, Alexander Gall <alexander.gall@uni-passau.de>
 *
@@ -15,6 +15,7 @@
     <meta charset="UTF-8" />
     <title>Visual Evidence of the Vanishing Sea</title>
 
+    <!-- Loading modules and stylesheets -->
     <link
       rel="stylesheet"
       href="http://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css"
@@ -25,8 +26,8 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
-    <link rel="stylesheet" type="text/css" href="style.css" />
 
+    <link rel="stylesheet" type="text/css" href="style.css" />
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -35,7 +36,6 @@
     ></script>
     <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-
     <script src="dataVis.js"></script>
     <script src="dashboard.js"></script>
   </head>
@@ -50,6 +50,7 @@
         Faculty of Computer Science and Mathematics - Chair of Cognitive sensor
         systems - University of Passau</a
       >.
+      <!-- Authors -->
       <p>
         Javokhirbek Mirzaakbarov
         <a href="mailto:mirzaa02@ads.uni-passau.de"
@@ -64,6 +65,7 @@
       </p>
     </div>
 
+    <!-- Tab buttons to switch -->
     <button class="tablink" onclick="openPage('DataLoading', this, 'blue')">
       Data Loading
     </button>
@@ -83,10 +85,10 @@
 
     <div id="DataLoading" class="tabcontent">
       <p>Select your data here: <input id="upload" type="file" /></p>
-
       <div id="dataTable"></div>
     </div>
 
+    <!-- Basic Visualization tab content -->
     <div id="BasicVisualization" class="tabcontent">
       <div class="container">
         <h2>Scatterplot</h2>
@@ -106,20 +108,25 @@
             </fieldset>
           </form>
         </div>
+        <!-- scatterplot -->
         <div id="sp"></div>
       </div>
 
       <div class="container">
         <h2>Radar Chart</h2>
+        <!-- radar chart -->
         <div id="radar"></div>
+        <!-- Legend for radar chart -->
         <div id="legend"><b>Legend:</b><br /></div>
       </div>
     </div>
 
+    <!-- Dashboard tab content -->
     <div id="Dashboard" class="tabcontent">
       <h1>The Visual Evidences of the Vanishing Aral Sea</h1>
 
       <div class="dashboardGrid">
+        <!-- Satellite and map side by side -->
         <div class="container full-width">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px">
             <div>
@@ -132,6 +139,8 @@
             </div>
           </div>
         </div>
+
+        <!-- Line chart for sea metrics -->
         <div class="container">
           <h2>Sea Metrics</h2>
           <div id="lineChartMenu">
@@ -145,16 +154,19 @@
           <div id="line-chart"></div>
         </div>
 
+        <!-- Bar chart for river water delivery -->
         <div class="container">
           <h2>River Water Delivery</h2>
           <div id="barChart"></div>
         </div>
 
+        <!-- Heatmap for average air temperature -->
         <div class="container">
           <h2>Average Air Temperature</h2>
           <div id="temperatureHeatmap"></div>
         </div>
 
+        <!-- Monthly temperature line chart -->
         <div class="container">
           <h2>
             Monthly Temperature
