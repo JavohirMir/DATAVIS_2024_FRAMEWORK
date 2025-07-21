@@ -207,7 +207,7 @@ window.dashboardInit = function (
     });
 };
 
-// Sets up the dropdown menu for line chart Y-axis selection 
+// Sets up the dropdown menu for line chart Y-axis selection
 // pretty standard d3 stuff here
 function initLineChartMenu(id, entries) {
   $("select#" + id).empty();
@@ -620,7 +620,7 @@ function createTimelapse() {
   // Play/Pause button
   const playButton = playControlsDiv
     .append("xhtml:button")
-    .text("▶")
+    .text("▶▶")
     .style("padding", "5px 10px")
     .style("cursor", "pointer")
     .on("click", togglePlay);
@@ -628,7 +628,7 @@ function createTimelapse() {
   // Next button
   const nextButton = playControlsDiv
     .append("xhtml:button")
-    .text("▶▶")
+    .text("▶")
     .style("padding", "5px 10px")
     .style("cursor", "pointer")
     .on("click", () => {
@@ -719,7 +719,7 @@ function createTimelapse() {
   function togglePlay() {
     if (isPlaying) {
       clearInterval(playInterval);
-      playButton.text("▶");
+      playButton.text("▶▶");
       isPlaying = false;
     } else {
       startPlay();
@@ -1175,10 +1175,11 @@ function initializeAralSeaMap() {
 function createExternalMapControls(baseLayers, overlayMaps) {
   // Remove any existing external controls
   d3.select("#mapControls").remove();
-  
+
   // Create external controls container
   const mapContainer = d3.select("#map").node().parentNode;
-  const controlsDiv = d3.select(mapContainer)
+  const controlsDiv = d3
+    .select(mapContainer)
     .append("div")
     .attr("id", "mapControls")
     .style("display", "grid")
@@ -1187,10 +1188,8 @@ function createExternalMapControls(baseLayers, overlayMaps) {
     .style("margin-top", "10px");
 
   // Move the map to the left column
-  const mapDiv = controlsDiv
-    .append("div")
-    .style("grid-column", "1");
-  
+  const mapDiv = controlsDiv.append("div").style("grid-column", "1");
+
   // Move the existing map element
   const mapElement = d3.select("#map").node();
   mapDiv.node().appendChild(mapElement);
@@ -1231,26 +1230,25 @@ function createExternalMapControls(baseLayers, overlayMaps) {
       .append("input")
       .attr("type", "radio")
       .attr("name", "baseLayer")
-      .attr("id", `base-${name.replace(/\s+/g, '-')}`)
+      .attr("id", `base-${name.replace(/\s+/g, "-")}`)
       .property("checked", name === "OpenStreetMap")
-      .on("change", function() {
+      .on("change", function () {
         if (this.checked) {
-          Object.values(baseLayers).forEach(l => aralSeaMap.removeLayer(l));
+          Object.values(baseLayers).forEach((l) => aralSeaMap.removeLayer(l));
           aralSeaMap.addLayer(layer);
         }
       });
 
     layerDiv
       .append("label")
-      .attr("for", `base-${name.replace(/\s+/g, '-')}`)
+      .attr("for", `base-${name.replace(/\s+/g, "-")}`)
       .style("cursor", "pointer")
       .style("user-select", "none")
       .text(name);
   });
 
   // Overlay Layers Section with Color Legends
-  const overlaySection = controlsPanel
-    .append("div");
+  const overlaySection = controlsPanel.append("div");
 
   overlaySection
     .append("h4")
@@ -1279,7 +1277,7 @@ function createExternalMapControls(baseLayers, overlayMaps) {
     .append("input")
     .attr("type", "checkbox")
     .attr("id", "layer-change")
-    .on("change", function() {
+    .on("change", function () {
       if (this.checked) {
         aralSeaMap.addLayer(overlayMaps["Occurrence Change Intensity"]);
       } else {
@@ -1312,13 +1310,18 @@ function createExternalMapControls(baseLayers, overlayMaps) {
     .append("div")
     .style("width", "150px")
     .style("height", "15px")
-    .style("background", "linear-gradient(to right, #FF0000 0%, #000000 50%, #00FF00 100%)")
+    .style(
+      "background",
+      "linear-gradient(to right, #FF0000 0%, #000000 50%, #00FF00 100%)"
+    )
     .style("border", "1px solid #ccc");
 
   changeScale
     .append("div")
     .style("font-size", "10px")
-    .html("<span style='color: #FF0000;'>■</span> Decrease &nbsp; <span style='color: #000000;'>■</span> No Change &nbsp; <span style='color: #00FF00;'>■</span> Increase");
+    .html(
+      "<span style='color: #FF0000;'>■</span> Decrease &nbsp; <span style='color: #000000;'>■</span> No Change &nbsp; <span style='color: #00FF00;'>■</span> Increase"
+    );
 
   // Water Occurrence
   const occurrenceDiv = overlaySection
@@ -1339,7 +1342,7 @@ function createExternalMapControls(baseLayers, overlayMaps) {
     .append("input")
     .attr("type", "checkbox")
     .attr("id", "layer-occurrence")
-    .on("change", function() {
+    .on("change", function () {
       if (this.checked) {
         aralSeaMap.addLayer(overlayMaps["Water Occurrence"]);
       } else {
@@ -1378,7 +1381,9 @@ function createExternalMapControls(baseLayers, overlayMaps) {
   occurrenceScale
     .append("div")
     .style("font-size", "10px")
-    .html("<span style='color: #FFCCCC;'>■</span> Rarely &nbsp; <span style='color: #0066CC;'>■</span> Always");
+    .html(
+      "<span style='color: #FFCCCC;'>■</span> Rarely &nbsp; <span style='color: #0066CC;'>■</span> Always"
+    );
 
   // Water Transitions
   const transitionsDiv = overlaySection
@@ -1399,7 +1404,7 @@ function createExternalMapControls(baseLayers, overlayMaps) {
     .append("input")
     .attr("type", "checkbox")
     .attr("id", "layer-transitions")
-    .on("change", function() {
+    .on("change", function () {
       if (this.checked) {
         aralSeaMap.addLayer(overlayMaps["Water Transitions"]);
       } else {
