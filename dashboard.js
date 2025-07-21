@@ -1372,13 +1372,13 @@ function createExternalMapControls(baseLayers, overlayMaps) {
     .append("div")
     .style("width", "150px")
     .style("height", "15px")
-    .style("background", "linear-gradient(to right, #FFCCCC 0%, #0066CC 100%)")
+    .style("background", "linear-gradient(to right, #FFCCCC 0%, #001fccff 100%)")
     .style("border", "1px solid #ccc");
 
   occurrenceScale
     .append("div")
     .style("font-size", "10px")
-    .html("<span style='color: #FFCCCC;'>■</span> Rarely &nbsp; <span style='color: #0066CC;'>■</span> Always");
+    .html("<span style='color: #FFCCCC;'>■</span> Rarely &nbsp; <span style='color: #001fccff;'>■</span> Always");
 
   // Water Transitions
   const transitionsDiv = overlaySection
