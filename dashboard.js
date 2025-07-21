@@ -1091,8 +1091,8 @@ function initializeAralSeaMap() {
   );
 
   // Add GSW web tile layers (from the official GSW service)
-  const gswExtentTiles = L.tileLayer(
-    "https://storage.googleapis.com/global-surface-water/tiles2021/extent/{z}/{x}/{y}.png",
+  const gswOccurrenceChangeTiles = L.tileLayer(
+    "https://storage.googleapis.com/global-surface-water/tiles2021/change/{z}/{x}/{y}.png",
     {
       maxZoom: 13,
       opacity: 0.7,
@@ -1129,36 +1129,13 @@ function initializeAralSeaMap() {
 
   // Create overlay layers (only Global Tiles)
   const overlayMaps = {
-    "Water Extent": gswExtentTiles,
+    "Occurrence Change Intensity": gswOccurrenceChangeTiles,
     "Water Occurrence": gswOccurrenceTiles,
     "Water Transitions": gswTransitionsTiles,
   };
 
-  // Add layer control to map
-  const layerControl = L.control
-    .layers(baseLayers, overlayMaps, {
-      position: "topright",
-      collapsed: false,
-    })
-    .addTo(aralSeaMap);
-
-  // Add legend for Global Surface Water layers
-  const gswLegend = L.control({ position: "bottomleft" });
-  gswLegend.onAdd = function (map) {
-    const div = L.DomUtil.create("div", "gsw-legend");
-    div.innerHTML =
-      '<div style="background: white; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 12px; max-width: 250px;">' +
-      '<h4 style="margin: 0 0 8px 0; color: #2c5aa0;">Global Surface Water Layers</h4>' +
-      '<div style="margin-bottom: 6px;"><strong>Extent:</strong> Maximum water extent (1984-2021)</div>' +
-      '<div style="margin-bottom: 6px;"><strong>Occurrence:</strong> Water frequency<br><span style="color: #0066cc;">■</span> = More frequent water</div>' +
-      '<div style="margin-bottom: 8px;"><strong>Transitions:</strong> Water body changes over time</div>' +
-      '<div style="margin-top: 8px; font-size: 10px; color: #666; border-top: 1px solid #eee; padding-top: 6px;">' +
-      "Source: © European Commission JRC" +
-      "</div>" +
-      "</div>";
-    return div;
-  };
-  gswLegend.addTo(aralSeaMap);
+  // Create external controls and legends outside the map
+  createExternalMapControls(baseLayers, overlayMaps);
 
   // Add scale control
   L.control
@@ -1168,6 +1145,304 @@ function initializeAralSeaMap() {
     .addTo(aralSeaMap);
 }
 
+// Create external map controls and legends
+function createExternalMapControls(baseLayers, overlayMaps) {
+  // Remove any existing external controls
+  d3.select("#mapControls").remove();
+  
+  // Create external controls container
+  const mapContainer = d3.select("#map").node().parentNode;
+  const controlsDiv = d3.select(mapContainer)
+    .append("div")
+    .attr("id", "mapControls")
+    .style("display", "grid")
+    .style("grid-template-columns", "1fr 300px")
+    .style("gap", "20px")
+    .style("margin-top", "10px");
+
+  // Move the map to the left column
+  const mapDiv = controlsDiv
+    .append("div")
+    .style("grid-column", "1");
+  
+  // Move the existing map element
+  const mapElement = d3.select("#map").node();
+  mapDiv.node().appendChild(mapElement);
+
+  // Create controls panel on the right
+  const controlsPanel = controlsDiv
+    .append("div")
+    .style("grid-column", "2")
+    .style("background", "white")
+    .style("border", "1px solid #ccc")
+    .style("border-radius", "5px")
+    .style("padding", "15px")
+    .style("font-family", "Arial, sans-serif")
+    .style("font-size", "12px");
+
+  // Base Layers Section
+  const baseLayersSection = controlsPanel
+    .append("div")
+    .style("margin-bottom", "20px");
+
+  baseLayersSection
+    .append("h4")
+    .style("margin", "0 0 10px 0")
+    .style("color", "#2c5aa0")
+    .style("border-bottom", "1px solid #eee")
+    .style("padding-bottom", "5px")
+    .text("Base Layers");
+
+  Object.entries(baseLayers).forEach(([name, layer]) => {
+    const layerDiv = baseLayersSection
+      .append("div")
+      .style("margin-bottom", "8px")
+      .style("display", "flex")
+      .style("align-items", "center")
+      .style("gap", "8px");
+
+    const radio = layerDiv
+      .append("input")
+      .attr("type", "radio")
+      .attr("name", "baseLayer")
+      .attr("id", `base-${name.replace(/\s+/g, '-')}`)
+      .property("checked", name === "OpenStreetMap")
+      .on("change", function() {
+        if (this.checked) {
+          Object.values(baseLayers).forEach(l => aralSeaMap.removeLayer(l));
+          aralSeaMap.addLayer(layer);
+        }
+      });
+
+    layerDiv
+      .append("label")
+      .attr("for", `base-${name.replace(/\s+/g, '-')}`)
+      .style("cursor", "pointer")
+      .style("user-select", "none")
+      .text(name);
+  });
+
+  // Overlay Layers Section with Color Legends
+  const overlaySection = controlsPanel
+    .append("div");
+
+  overlaySection
+    .append("h4")
+    .style("margin", "0 0 10px 0")
+    .style("color", "#2c5aa0")
+    .style("border-bottom", "1px solid #eee")
+    .style("padding-bottom", "5px")
+    .text("Water Data Layers");
+
+  // Occurrence Change Intensity
+  const changeDiv = overlaySection
+    .append("div")
+    .style("margin-bottom", "15px")
+    .style("border", "1px solid #eee")
+    .style("border-radius", "3px")
+    .style("padding", "10px");
+
+  const changeHeader = changeDiv
+    .append("div")
+    .style("display", "flex")
+    .style("align-items", "center")
+    .style("gap", "8px")
+    .style("margin-bottom", "8px");
+
+  const changeCheckbox = changeHeader
+    .append("input")
+    .attr("type", "checkbox")
+    .attr("id", "layer-change")
+    .on("change", function() {
+      if (this.checked) {
+        aralSeaMap.addLayer(overlayMaps["Occurrence Change Intensity"]);
+      } else {
+        aralSeaMap.removeLayer(overlayMaps["Occurrence Change Intensity"]);
+      }
+    });
+
+  changeHeader
+    .append("label")
+    .attr("for", "layer-change")
+    .style("cursor", "pointer")
+    .style("font-weight", "bold")
+    .text("Occurrence Change Intensity");
+
+  changeDiv
+    .append("div")
+    .style("font-size", "11px")
+    .style("color", "#666")
+    .style("margin-bottom", "8px")
+    .text("Changes in water occurrence (1984-1999 to 2000-2021)");
+
+  // Color scale for change intensity
+  const changeScale = changeDiv
+    .append("div")
+    .style("display", "flex")
+    .style("align-items", "center")
+    .style("gap", "5px");
+
+  const changeGradient = changeScale
+    .append("div")
+    .style("width", "150px")
+    .style("height", "15px")
+    .style("background", "linear-gradient(to right, #FF0000 0%, #000000 50%, #00FF00 100%)")
+    .style("border", "1px solid #ccc");
+
+  changeScale
+    .append("div")
+    .style("font-size", "10px")
+    .html("<span style='color: #FF0000;'>■</span> Decrease &nbsp; <span style='color: #000000;'>■</span> No Change &nbsp; <span style='color: #00FF00;'>■</span> Increase");
+
+  // Water Occurrence
+  const occurrenceDiv = overlaySection
+    .append("div")
+    .style("margin-bottom", "15px")
+    .style("border", "1px solid #eee")
+    .style("border-radius", "3px")
+    .style("padding", "10px");
+
+  const occurrenceHeader = occurrenceDiv
+    .append("div")
+    .style("display", "flex")
+    .style("align-items", "center")
+    .style("gap", "8px")
+    .style("margin-bottom", "8px");
+
+  const occurrenceCheckbox = occurrenceHeader
+    .append("input")
+    .attr("type", "checkbox")
+    .attr("id", "layer-occurrence")
+    .on("change", function() {
+      if (this.checked) {
+        aralSeaMap.addLayer(overlayMaps["Water Occurrence"]);
+      } else {
+        aralSeaMap.removeLayer(overlayMaps["Water Occurrence"]);
+      }
+    });
+
+  occurrenceHeader
+    .append("label")
+    .attr("for", "layer-occurrence")
+    .style("cursor", "pointer")
+    .style("font-weight", "bold")
+    .text("Water Occurrence");
+
+  occurrenceDiv
+    .append("div")
+    .style("font-size", "11px")
+    .style("color", "#666")
+    .style("margin-bottom", "8px")
+    .text("Frequency of water presence (1984-2021)");
+
+  // Color scale for occurrence
+  const occurrenceScale = occurrenceDiv
+    .append("div")
+    .style("display", "flex")
+    .style("align-items", "center")
+    .style("gap", "5px");
+
+  const occurrenceGradient = occurrenceScale
+    .append("div")
+    .style("width", "150px")
+    .style("height", "15px")
+    .style("background", "linear-gradient(to right, #FFCCCC 0%, #0066CC 100%)")
+    .style("border", "1px solid #ccc");
+
+  occurrenceScale
+    .append("div")
+    .style("font-size", "10px")
+    .html("<span style='color: #FFCCCC;'>■</span> Rarely &nbsp; <span style='color: #0066CC;'>■</span> Always");
+
+  // Water Transitions
+  const transitionsDiv = overlaySection
+    .append("div")
+    .style("margin-bottom", "15px")
+    .style("border", "1px solid #eee")
+    .style("border-radius", "3px")
+    .style("padding", "10px");
+
+  const transitionsHeader = transitionsDiv
+    .append("div")
+    .style("display", "flex")
+    .style("align-items", "center")
+    .style("gap", "8px")
+    .style("margin-bottom", "8px");
+
+  const transitionsCheckbox = transitionsHeader
+    .append("input")
+    .attr("type", "checkbox")
+    .attr("id", "layer-transitions")
+    .on("change", function() {
+      if (this.checked) {
+        aralSeaMap.addLayer(overlayMaps["Water Transitions"]);
+      } else {
+        aralSeaMap.removeLayer(overlayMaps["Water Transitions"]);
+      }
+    });
+
+  transitionsHeader
+    .append("label")
+    .attr("for", "layer-transitions")
+    .style("cursor", "pointer")
+    .style("font-weight", "bold")
+    .text("Water Transitions");
+
+  transitionsDiv
+    .append("div")
+    .style("font-size", "11px")
+    .style("color", "#666")
+    .style("margin-bottom", "8px")
+    .text("Water body changes and transitions over time");
+
+  // Color annotations for transitions
+  const transitionsColors = transitionsDiv
+    .append("div")
+    .style("font-size", "10px")
+    .style("line-height", "1.4");
+
+  transitionsColors
+    .append("div")
+    .html("<span style='color: #0000FF;'>■</span> Permanent");
+  transitionsColors
+    .append("div")
+    .html("<span style='color: #00CC00;'>■</span> New Permanent");
+  transitionsColors
+    .append("div")
+    .html("<span style='color: #990033;'>■</span> Lost Permanent");
+  transitionsColors
+    .append("div")
+    .html("<span style='color: #87CEEB;'>■</span> Seasonal");
+  transitionsColors
+    .append("div")
+    .html("<span style='color: #CCFF00;'>■</span> New Seasonal");
+  transitionsColors
+    .append("div")
+    .html("<span style='color: #FFB6C1;'>■</span> Lost Seasonal");
+  transitionsColors
+    .append("div")
+    .html("<span style='color: #FF9900;'>■</span> Seasonal to Permanent");
+  transitionsColors
+    .append("div")
+    .html("<span style='color: #FFFF00;'>■</span> Permanent to Seasonal");
+  transitionsColors
+    .append("div")
+    .html("<span style='color: #808080;'>■</span> Ephemeral Permanent");
+  transitionsColors
+    .append("div")
+    .html("<span style='color: #C0C0C0;'>■</span> Ephemeral Seasonal");
+
+  // Attribution
+  controlsPanel
+    .append("div")
+    .style("margin-top", "15px")
+    .style("padding-top", "10px")
+    .style("border-top", "1px solid #eee")
+    .style("font-size", "10px")
+    .style("color", "#666")
+    .text("Source: © European Commission JRC/Google");
+}
+
 // clear files if changes in the datasets occur
 function clearDashboard() {
   d3.select("#line-chart").selectAll("svg").remove();
@@ -1175,6 +1450,9 @@ function clearDashboard() {
   d3.select("#timelapse").selectAll("svg").remove();
   d3.select("#temperatureHeatmap").selectAll("svg").remove();
   d3.select("#monthlyTemperatureLineChart").selectAll("svg").remove();
+
+  // Clear external map controls
+  d3.select("#mapControls").remove();
 
   // Clear map if it exists
   if (aralSeaMap) {
