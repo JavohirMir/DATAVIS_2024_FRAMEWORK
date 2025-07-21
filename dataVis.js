@@ -827,4 +827,11 @@ function openPage(pageName, elmnt, color) {
   }
   document.getElementById(pageName).style.display = "block";
   elmnt.style.backgroundColor = color;
+  
+  // If opening Dashboard page and map exists, invalidate size
+  if (pageName === 'Dashboard' && typeof aralSeaMap !== 'undefined' && aralSeaMap) {
+    setTimeout(() => {
+      aralSeaMap.invalidateSize();
+    }, 100);
+  }
 }

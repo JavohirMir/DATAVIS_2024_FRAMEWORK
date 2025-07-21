@@ -77,8 +77,12 @@ svg {
 
 .dashboardGrid {
   display: grid;
-  grid-template-columns: auto auto;
-  grid-gap: 10px;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 15px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
 }
 
 .axis line,
@@ -148,4 +152,57 @@ div.tooltip {
 
 .month-cell {
   transition: fill 0.2s ease-in-out, stroke 0.2s ease-in-out;
+}
+
+/* Leaflet map styles */
+#map {
+  height: 450px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Global Surface Water legend styles */
+.gsw-legend {
+  background: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.gsw-legend h4 {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+/* Layer control styling */
+.leaflet-control-layers {
+  background: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.leaflet-control-layers-expanded {
+  padding: 6px 10px 6px 6px;
+  min-width: 220px;
+}
+
+.leaflet-control-layers label {
+  font-size: 12px;
+  margin: 2px 0;
+}
+
+/* Style for section headers in layer control */
+.leaflet-control-layers label strong {
+  color: #2c5aa0;
+  display: block;
+  margin: 8px 0 4px 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 2px;
+}
+
+/* Scale control styling */
+.leaflet-control-scale {
+  font-size: 11px;
 }
