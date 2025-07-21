@@ -19,7 +19,8 @@ let lineChart,
   lineChartXAxisLabel,
   lineChartYAxisLabel,
   lineChartXScale,
-  lineChartYScale;
+  lineChartYScale,
+  aralSeaMap;
 const lineChartDimensions = ["Water_Level_m", "Surface_Area_km2", "Volume_km3"];
 const xAxisDimension = "Year";
 
@@ -189,6 +190,7 @@ window.dashboardInit = function (
       renderLineChart();
       renderBarChart(riverData);
       createChart3();
+      initializeAralSeaMap();
       renderTemperatureHeatmap(temperatureDataHeatmap);
       if (temperatureDataRaw.length > 0) {
         selectedHeatmapYear = temperatureDataRaw[0].Year;
@@ -548,7 +550,7 @@ function createChart3() {
   function preloadImages() {
     aralSeaYears.forEach((year) => {
       const img = new Image();
-      img.src = `ARAL SEA/${year}.png`;
+      img.src = `datasets/images/${year}.png`;
       imageCache[year] = img;
     });
   }
@@ -676,7 +678,7 @@ function createChart3() {
 
   function updateImage() {
     const newYear = aralSeaYears[currentImageIndex];
-    const newImageSrc = `ARAL SEA/${newYear}.png`;
+    const newImageSrc = `datasets/images/${newYear}.png`;
 
     // Direct image swap
     timelapseImage.attr("src", newImageSrc);
@@ -1067,6 +1069,86 @@ function renderMonthlyTemperatureLineChart(_dataRaw, selectedYear) {
     });
 }
 
+// Initialize Aral Sea map with Leaflet
+function initializeAralSeaMap() {
+  // Initialize the map centered on the Aral Sea
+  aralSeaMap = L.map('map').setView([45.0, 60.0], 6);
+  
+  // Add OpenStreetMap tile layer
+  const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  });
+  
+  // Add satellite layer option
+  const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles © Esri'
+  });
+  
+  // Add GSW web tile layers (from the official GSW service)
+  const gswExtentTiles = L.tileLayer('https://storage.googleapis.com/global-surface-water/tiles2021/extent/{z}/{x}/{y}.png', {
+    maxZoom: 13,
+    opacity: 0.7,
+    attribution: '© 2021 EC JRC/Google'
+  });
+  
+  const gswOccurrenceTiles = L.tileLayer('https://storage.googleapis.com/global-surface-water/tiles2021/occurrence/{z}/{x}/{y}.png', {
+    maxZoom: 13,
+    opacity: 0.7,
+    attribution: '© 2021 EC JRC/Google'
+  });
+  
+  const gswTransitionsTiles = L.tileLayer('https://storage.googleapis.com/global-surface-water/tiles2021/transitions/{z}/{x}/{y}.png', {
+    maxZoom: 13,
+    opacity: 0.7,
+    attribution: '© 2021 EC JRC/Google'
+  });
+  
+  // Set default base layer
+  osmLayer.addTo(aralSeaMap);
+  
+  // Create base layers
+  const baseLayers = {
+    "OpenStreetMap": osmLayer,
+    "Satellite": satelliteLayer
+  };
+  
+  // Create overlay layers (only Global Tiles)
+  const overlayMaps = {
+    "Water Extent": gswExtentTiles,
+    "Water Occurrence": gswOccurrenceTiles,
+    "Water Transitions": gswTransitionsTiles
+  };
+  
+  // Add layer control to map
+  const layerControl = L.control.layers(baseLayers, overlayMaps, {
+    position: 'topright',
+    collapsed: false
+  }).addTo(aralSeaMap);
+  
+  // Add legend for Global Surface Water layers
+  const gswLegend = L.control({position: 'bottomleft'});
+  gswLegend.onAdd = function (map) {
+    const div = L.DomUtil.create('div', 'gsw-legend');
+    div.innerHTML = 
+      '<div style="background: white; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 12px; max-width: 250px;">' +
+      '<h4 style="margin: 0 0 8px 0; color: #2c5aa0;">Global Surface Water Layers</h4>' +
+      '<div style="margin-bottom: 6px;"><strong>Extent:</strong> Maximum water extent (1984-2021)</div>' +
+      '<div style="margin-bottom: 6px;"><strong>Occurrence:</strong> Water frequency<br><span style="color: #0066cc;">■</span> = More frequent water</div>' +
+      '<div style="margin-bottom: 8px;"><strong>Transitions:</strong> Water body changes over time</div>' +
+      '<div style="margin-top: 8px; font-size: 10px; color: #666; border-top: 1px solid #eee; padding-top: 6px;">' +
+      'Source: © European Commission JRC' +
+      '</div>' +
+      '</div>';
+    return div;
+  };
+  gswLegend.addTo(aralSeaMap);
+  
+  // Add scale control
+  L.control.scale({
+    position: 'bottomright'
+  }).addTo(aralSeaMap);
+}
+
 // clear files if changes in the datasets occur
 function clearDashboard() {
   d3.select("#line-chart").selectAll("svg").remove();
@@ -1074,4 +1156,10 @@ function clearDashboard() {
   d3.select("#chart3").selectAll("svg").remove();
   d3.select("#temperatureHeatmap").selectAll("svg").remove();
   d3.select("#monthlyTemperatureLineChart").selectAll("svg").remove();
+  
+  // Clear map if it exists
+  if (aralSeaMap) {
+    aralSeaMap.remove();
+    aralSeaMap = null;
+  }
 }
