@@ -58,6 +58,8 @@ let temperatureDataRaw = [];
 let temperatureDataHeatmap = [];
 let selectedHeatmapYear = null;
 
+// Main initialization function - sets up all the charts and loads data
+// TODO: might want to add error handling for file loading later
 window.dashboardInit = function (
   _mainData,
   _riverDataFilePath = "datasets/water_delivery_1992_2023.csv",
@@ -205,6 +207,8 @@ window.dashboardInit = function (
     });
 };
 
+// Sets up the dropdown menu for line chart Y-axis selection 
+// pretty standard d3 stuff here
 function initLineChartMenu(id, entries) {
   $("select#" + id).empty();
 
@@ -223,6 +227,8 @@ function initLineChartMenu(id, entries) {
   $("#" + id).selectmenu("refresh");
 }
 
+// Renders the main line chart with selected dimension
+// this function handles the dynamic Y-axis changes
 function renderLineChart() {
   if (!window.currentData || window.currentData.length === 0) {
     lineChart.selectAll("*").remove();
@@ -346,6 +352,8 @@ function renderLineChart() {
     });
 }
 
+// Creates a grouped bar chart comparing river data
+// shows Amu Darya vs Syr Darya water delivery over time
 function renderBarChart(_data) {
   if (!_data || _data.length === 0) {
     barChart.selectAll("*").remove();
@@ -498,6 +506,9 @@ function renderBarChart(_data) {
     .text((d) => riverNames[d]);
 }
 
+// Interactive timelapse component for Aral Sea images
+// includes play/pause controls and speed adjustment
+// note: image preloading might cause memory issues with large datasets
 function createTimelapse() {
   timelapse.selectAll("*").remove();
 
@@ -547,6 +558,7 @@ function createTimelapse() {
   let imageCache = {};
 
   // Preload all images for smooth transitions
+  // this could take a while depending on image sizes
   function preloadImages() {
     aralSeaYears.forEach((year) => {
       const img = new Image();
@@ -676,6 +688,7 @@ function createTimelapse() {
       updateImage();
     });
 
+  // Updates the displayed image in timelapse
   function updateImage() {
     const newYear = aralSeaYears[currentImageIndex];
     const newImageSrc = `datasets/screenshots/${newYear}.png`;
@@ -688,6 +701,7 @@ function createTimelapse() {
     yearSlider.property("value", currentImageIndex);
   }
 
+  // Auto-plays through images at set interval
   function startPlay() {
     playInterval = setInterval(() => {
       if (currentImageIndex < aralSeaYears.length - 1) {
@@ -700,6 +714,8 @@ function createTimelapse() {
     }, playSpeed);
   }
 
+  // Toggles between play and pause states
+  // pretty straightforward functionality here
   function togglePlay() {
     if (isPlaying) {
       clearInterval(playInterval);
@@ -723,6 +739,9 @@ function createTimelapse() {
   });
 }
 
+// Temperature heatmap visualization
+// uses color scale to show temperature variations across months/years
+// clicking on cells updates the line chart below
 function renderTemperatureHeatmap(_data) {
   temperatureHeatmap.selectAll("*").remove();
 
@@ -927,6 +946,9 @@ function renderTemperatureHeatmap(_data) {
     .text("Temp (°C)");
 }
 
+// Monthly temperature line chart for selected year
+// gets updated when user clicks on heatmap cells
+// shows seasonal temperature patterns
 function renderMonthlyTemperatureLineChart(_dataRaw, selectedYear) {
   monthlyTemperatureLineChart.selectAll("*").remove();
 
@@ -1070,6 +1092,8 @@ function renderMonthlyTemperatureLineChart(_dataRaw, selectedYear) {
 }
 
 // Initialize Aral Sea map with Leaflet
+// sets up base layers and GSW overlay data
+// coordinates centered on Aral Sea region
 function initializeAralSeaMap() {
   // Initialize the map centered on the Aral Sea
   aralSeaMap = L.map("map").setView([45.0, 60.0], 6);
@@ -1146,6 +1170,8 @@ function initializeAralSeaMap() {
 }
 
 // Create external map controls and legends
+// moved controls outside map for better layout
+// includes layer toggles and color legends
 function createExternalMapControls(baseLayers, overlayMaps) {
   // Remove any existing external controls
   d3.select("#mapControls").remove();
@@ -1444,6 +1470,8 @@ function createExternalMapControls(baseLayers, overlayMaps) {
 }
 
 // clear files if changes in the datasets occur
+// cleanup function to reset all visualizations
+// important to call this before reinitializing
 function clearDashboard() {
   d3.select("#line-chart").selectAll("svg").remove();
   d3.select("#barChart").selectAll("svg").remove();
