@@ -556,7 +556,7 @@ function createChart3() {
   }
 
   // Initialize with first image and start preloading
-  timelapseImage.attr("src", `datasets/images/${aralSeaYears[0]}.png`);
+  timelapseImage.attr("src", `datasets/screenshots/${aralSeaYears[0]}.png`);
   preloadImages();
 
   // Year display
@@ -678,7 +678,7 @@ function createChart3() {
 
   function updateImage() {
     const newYear = aralSeaYears[currentImageIndex];
-    const newImageSrc = `datasets/images/${newYear}.png`;
+    const newImageSrc = `datasets/screenshots/${newYear}.png`;
 
     // Direct image swap
     timelapseImage.attr("src", newImageSrc);
