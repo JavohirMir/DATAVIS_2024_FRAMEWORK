@@ -27,7 +27,7 @@ const xAxisDimension = "Year";
 // Label mapping
 const labelMap = {
   Water_Level_m: "Water Level (m)",
-  Surface_Area_km2: "Surface Area (km²)",
+  Surface_Area_km2: "Surface Area (thousand km²)",
   Volume_km3: "Volume (km³)",
   Sedimentation: "Sedimentation",
   "Seimentation in coastal zone": "Coastal Sedimentation",
